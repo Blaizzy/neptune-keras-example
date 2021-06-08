@@ -6,8 +6,9 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
 import neptune.new as neptune
+from neptune.new.integrations.tensorflow_keras import NeptuneCallback
 
-run = neptune.init(project='common/keras-example-project', api_token='ANONYMOUS', tags='basic')
+run = neptune.init(project='common/keras-example-project', api_token='ANONYMOUS', tags='integration')
 
 params = {
     'num_classes': 10,
@@ -54,26 +55,14 @@ model = keras.Sequential(
     ]
 )
 
-optimizer = keras.optimizers.SGD(learning_rate=params['lr'])
-loss_fn = keras.losses.CategoricalCrossentropy()
-accuracy = keras.metrics.CategoricalAccuracy()
+model.compile(loss="categorical_crossentropy", optimizer="adam", metrics=["accuracy"])
 
-for epoch in range(params['epochs']):
-
-    for i, (x, y) in enumerate(train_dataset):
-        with tf.GradientTape() as tape:
-            preds = model(x, training = True)
-            loss = loss_fn(y, preds)
-            accuracy.update_state(y, preds)
-            # loss.numpy() 
-            # accuracy.result().numpy()
-            run['metrics/loss'].log(loss.numpy())
-            run['metrics/accuracy'].log(accuracy.result().numpy())
-
-
-        grads = tape.gradient(loss, model.trainable_weights)
-        optimizer.apply_gradients(zip(grads, model.trainable_weights))
-        accuracy.reset_states()
+model.fit(
+    x_train, y_train, 
+    batch_size=params['batch_size'], 
+    epochs=params['epochs'], 
+    validation_split=params['validation_split'],
+    callbacks = [NeptuneCallback(run, base_namespace = 'metrics')])
     
 
 run.stop()

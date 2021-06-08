@@ -5,6 +5,9 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
+import neptune.new as neptune
+
+run = neptune.init(project='common/keras-example-project', api_token='ANONYMOUS', tags='basic')
 
 params = {
     'num_classes': 10,
@@ -16,6 +19,7 @@ params = {
 }
 
 # log params
+run['hyperparameters'] = params
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
@@ -62,8 +66,9 @@ for epoch in range(params['epochs']):
         with tf.GradientTape() as tape:
             preds = model(x, training = True)
             loss = loss_fn(y, preds)
-            
             accuracy.update_state(y, preds)
+            run['metrics/loss'].log(loss.numpy())
+            run['metrics/accuracy'].log(accuracy.result().numpy())
             # print('loss', loss.numpy(), 'acc', accuracy.result().numpy())
 
         grads = tape.gradient(loss, model.trainable_weights)
