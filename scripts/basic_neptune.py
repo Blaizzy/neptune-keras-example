@@ -12,14 +12,14 @@ run = neptune.init(project='common/keras-example-project', api_token='ANONYMOUS'
 params = {
     'num_classes': 10,
     'input_shape': (28, 28, 1),
-    'epochs': 1,
+    'epochs': 2,
     'lr': 0.1,
     'batch_size': 128,
     'validation_split' :0.1
 }
 
 # log params
-run['hyparameters'] = params
+run['config/hyparameters'] = params
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
