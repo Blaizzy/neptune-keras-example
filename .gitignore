@@ -1,2 +1,5 @@
 .vscode/
 .neptune/
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+notebooks/my_model/
